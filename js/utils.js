@@ -1,3 +1,6 @@
+'use strict'
+
+//setMinesNegsCount
 function setMinesNegsCount(board, rowIdx, colIdx) {
   var count = 0;
   // console.log('board length', board.length)
@@ -14,15 +17,15 @@ function setMinesNegsCount(board, rowIdx, colIdx) {
   return count;
 }
 
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
-}
 
+//getClassName
 function getClassName(i, j) {
   var cellClass = '.cell-' + i + '-' + j;
   return cellClass;
 }
 
+
+//getEmptyCells
 function getEmptyCells(board) {
   var emptyCells = [];
   for (var i = 0; i < board.length; i++) {
@@ -34,6 +37,27 @@ function getEmptyCells(board) {
     }
   }
   return emptyCells;
+}
+
+
+//addStopWatch
+function addStopWatch() {
+  var startTime = new Date();
+  var elStopWatch = document.querySelector('.stop-watch');
+  gShowTimeInterval = setInterval(function () {
+      var timeElapsed = (new Date() - startTime);
+      elStopWatch.innerText = parseInt(timeElapsed / 1000);
+  }, 1);
+}
+function stopWatch() {
+  clearInterval(gShowTimeInterval);
+  gShowTimeInterval = null;
+}
+
+
+//getRandomInt
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
 }
 
 //////////////////////////////////////////////////////////////////////////

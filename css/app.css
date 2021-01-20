@@ -16,7 +16,19 @@ body {
   background-color: rgb(47, 47, 97);
 }
 
+.shown{
+  background-color:  rgb(107, 104, 107);
+}
 .hidden{
   text-indent:-9999px;
+
+}
+
+.stop-watch{
+  background-color: rgb(59, 28, 17);
+}
+
+span{
+  display: none;
 
 }
