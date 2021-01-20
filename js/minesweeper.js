@@ -28,7 +28,7 @@ function initGame(elButton) {
 
     var elScore = document.querySelector('.score');
     var elStopWatch = document.querySelector('.stop-watch');
-    if (!isFirstGame && +(elStopWatch.innerText) < +(elScore.innerText)) {
+    if (!isFirstGame && (+elStopWatch.innerText) < (+elScore.innerText)) {
         elScore.innerText = elStopWatch.innerText;
         var elScoreSpan = document.querySelector('span');
         elScoreSpan.style.display = 'block';
@@ -40,7 +40,7 @@ function initGame(elButton) {
     elGameOverMessage.style.display = 'none';
     gGame.markedCount = 0;
 
-    if (elButton.innerText === 'beginner') {
+    if (elButton.innerText === 'Beginner') {
         gLevel.size = 4;
         gLevel.mines = 2;
     }
@@ -48,7 +48,7 @@ function initGame(elButton) {
         gLevel.size = 8;
         gLevel.mines = 12;
     }
-    else if (elButton.innerText === 'expert') {
+    else if (elButton.innerText === 'Expert') {
         gLevel.size = 12;
         gLevel.mines = 30;
     }
@@ -235,8 +235,8 @@ function checkGameOver(winOrLoose) {
             if (currCell.isMine && currCell.isMarked) count++;
         }
     }
-    console.log('count:', count);
-    console.log('gGame.shownCount', gGame.shownCount);
+    // console.log('count:', count);
+    // console.log('gGame.shownCount', gGame.shownCount);
     if (count === gLevel.mines && gGame.shownCount === (gLevel.size ** 2 - gLevel.mines)) {
         elGameOverMessage.style.display = 'block';
         elGameOverMessage.innerText = 'victory!';
