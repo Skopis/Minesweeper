@@ -3,6 +3,7 @@
 const MINE = '💣'
 const FLAG = '🚩'
 const LIFE = '❤️';
+const HINT = '💡';
 
 var gBoard = [];
 var gLevel = {
@@ -22,14 +23,20 @@ var gShowTimeInterval;//var for the timer
 var gElLivesCount = document.querySelector('.life');//life element
 var gElPlaySmiley = document.querySelector('.play-again');//smily-newGame element
 var gElGameOverMessage = document.querySelector('.game-over');//game-over message element
+var gelHint = document.querySelector('.hint');
 var gElStopWatch = document.querySelector('.time');//timer element
 var gElScore = document.querySelector('.score-num');//score element
 var gScores = [0, 0, 0];//array of scores for all 3 levels
 var gLevelIdx = 0;//so we can pull the needed score from the array. begginer=0, medium=1, expert=2
+var gSafeClickRemaining;
+var gElSafeClick = document.querySelector('.safe-click');
 
 
 //initiate Game
 function initGame(elButton) {
+    gSafeClickRemaining = 3;
+    gElSafeClick.innerText = 'SafeClicks: ' + gSafeClickRemaining;
+    gelHint.innerText = HINT;
     gElPlaySmiley.innerText = '😀'
     stopWatch();
     gFirstCellClicked = false;
@@ -50,6 +57,20 @@ function initGame(elButton) {
     gGame.isOn = true;
 }
 
+//safe click
+function safeClick(elButton) {
+    if (!gSafeClickRemaining) return;
+    gSafeClickRemaining--;
+    elButton.innerText = 'SafeClicks: ' + gSafeClickRemaining;
+    var emptyCells = getEmptyNotShownCell(gBoard);
+    var emptyCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    var className = getClassName(emptyCell.i, emptyCell.j);
+    var elEmptyCell = document.querySelector(className);
+    elEmptyCell.classList.add('safe');
+    setTimeout(function () {
+        elEmptyCell.classList.remove('safe');
+    }, 3000);
+}
 
 //dificulty check
 function dificultyCheck(elButton) {
@@ -57,19 +78,19 @@ function dificultyCheck(elButton) {
         gLevel.size = 4;
         gLevel.mines = 2;
         gLevelIdx = 0;
-        gElScore.innerText = score(gLevelIdx );
+        gElScore.innerText = score(gLevelIdx);
     }
     else if (elButton.innerText === 'Medium') {
         gLevel.size = 8;
         gLevel.mines = 12;
         gLevelIdx = 1;
-        gElScore.innerText = score(gLevelIdx );
+        gElScore.innerText = score(gLevelIdx);
     }
     else if (elButton.innerText === 'Expert') {
         gLevel.size = 12;
         gLevel.mines = 30;
         gLevelIdx = 2;
-        gElScore.innerText = score(gLevelIdx );
+        gElScore.innerText = score(gLevelIdx);
     }
     else if (elButton.innerText === '😀' ||
         elButton.innerText === '🤯' ||
@@ -172,7 +193,7 @@ function renderBoard(board, selector) {
             if (!board[i][j].isShown) {
                 var className = getClassName(i, j);
                 var elCell = document.querySelector(className);
-                elCell.classList.add('.hidden');
+                elCell.classList.add('hidden');
             }
         }
     }
@@ -219,10 +240,7 @@ function cellMarked(elCell, i, j) {
     if (gGame.isOn === false) return;
     if (gBoard[i][j].isShown && !gBoard[i][j].isMarked) return;
 
-    if (!gFirstCellClicked) {
-        addStopWatch();
-        gFirstCellClicked = true;
-    }
+    if (!gFirstCellClicked) return;
 
     if (gBoard[i][j].isMarked === true) {
         gBoard[i][j].isMarked = false;
