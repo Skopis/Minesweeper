@@ -57,19 +57,19 @@ function dificultyCheck(elButton) {
         gLevel.size = 4;
         gLevel.mines = 2;
         gLevelIdx = 0;
-        gElScore.innerText = score(0);
+        gElScore.innerText = score(gLevelIdx );
     }
     else if (elButton.innerText === 'Medium') {
         gLevel.size = 8;
         gLevel.mines = 12;
         gLevelIdx = 1;
-        gElScore.innerText = score(1);
+        gElScore.innerText = score(gLevelIdx );
     }
     else if (elButton.innerText === 'Expert') {
         gLevel.size = 12;
         gLevel.mines = 30;
         gLevelIdx = 2;
-        gElScore.innerText = score(2);
+        gElScore.innerText = score(gLevelIdx );
     }
     else if (elButton.innerText === '😀' ||
         elButton.innerText === '🤯' ||
@@ -86,6 +86,7 @@ function score(idx) {
     if (gIsWon && gElStopWatch.innerText > 0 && gScores[idx] === 0) {
         gElScore.innerText = gElStopWatch.innerText;
         gScores[idx] = gElStopWatch.innerText;
+
     }
     if (gIsWon && gElStopWatch.innerText > 0 && +(gElStopWatch.innerText) < +(gScores[idx])) {
         gElScore.innerText = gElStopWatch.innerText;
@@ -93,6 +94,7 @@ function score(idx) {
     }
     console.log('gScores', gScores);
     console.log('gScores[idx]', gScores[idx]);
+    gElStopWatch.innerText = '0';
     return gScores[idx];
 }
 
@@ -174,8 +176,6 @@ function renderBoard(board, selector) {
             }
         }
     }
-    console.log('gBoard after render:');
-    console.table(gBoard);
 }
 
 
