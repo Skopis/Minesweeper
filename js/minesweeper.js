@@ -11,7 +11,7 @@ var gLevel = {
 
 var gGame = {
     isOn: false, //Boolean, when true we let the user play
-    shownCount: 0, //How many cells are shown
+    shownCount: 0, //didn't use that
     markedCount: 0, //didn't use that
     secsPassed: 0 //didn't use that
 }
@@ -29,7 +29,6 @@ var gElGameOverMessage = document.querySelector('.game-over');
 //initGame
 function initGame(elButton) {
     gElPlaySmiley.innerText = '😀'
-    gGame.shownCount = 0;
     stopWatch();
     gFirstCellClicked = false;
 
@@ -40,14 +39,13 @@ function initGame(elButton) {
     console.log('elStopWatch.innerText', elStopWatch.innerText)
 
     if (isWon && isFirstGame) {
-        console.log('isFirstGame?', isFirstGame);
         elScore.innerText = elStopWatch.innerText;
         isFirstGame = false;
     }
     if (isWon && elStopWatch.innerText > 0 && +(elStopWatch.innerText) < +(elScore.innerText)) {
         elScore.innerText = elStopWatch.innerText;
-        isWon = false;
     }
+    isWon = false;
     elStopWatch.innerText = '0';
 
     var elGameOverMessage = document.querySelector('.game-over');
@@ -183,10 +181,9 @@ function cellClicked(elCell, i, j) {
     if (!gBoard[i][j].isShown) {
         elCell.classList.remove('hidden');
         gBoard[i][j].isShown = true;
-        gGame.shownCount++;
     }
 
-    if (!gBoard[i][j].isMine && gBoard[i][j].minesAroundCount === 0) expandShown(gBoard, elCell, i, j);
+    if (!gBoard[i][j].isMine && gBoard[i][j].minesAroundCount === 0) expandShown(gBoard, i, j);
 
     if (gBoard[i][j].isMine && gLivesCount > 1) {
         gLivesCount--;
@@ -208,7 +205,7 @@ function cellMarked(elCell, i, j) {
     if (gGame.isOn === false) return;
     if (gBoard[i][j].isShown && !gBoard[i][j].isMarked) return;
 
-    if (gFirstCellClicked === false) {
+    if (!gFirstCellClicked) {
         addStopWatch();
         gFirstCellClicked = true;
     }
@@ -228,8 +225,19 @@ function cellMarked(elCell, i, j) {
 }
 
 
-//expandShown
-function expandShown(board, elCell, rowIdx, colIdx) {
+function zero(rowIdx, colIdx) {
+    for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
+        for (var j = colIdx - 1; j <= colIdx + 1; j++) {
+            var neighbor = $('.tile[row-d=' + i + '][col-d=' + j + ']');
+            var bombNr = neighbor.attr('bomb_number');
+
+            neighbor.text(bombNr);
+
+            if (bombNr === "0") zero(i, j);
+        }
+    }
+}
+function expandShown(board, rowIdx, colIdx) {//expand cells that are neighbors of the given cell, that are not mines
     for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
         if (i < 0 || i > board.length - 1) continue;
         for (var j = colIdx - 1; j <= colIdx + 1; j++) {
@@ -238,18 +246,15 @@ function expandShown(board, elCell, rowIdx, colIdx) {
             var currCell = board[i][j];
             if (!currCell.isMine && !currCell.isShown) {
                 gBoard[i][j].isShown = true;
-                elCell.classList.remove('hidden');
-                gGame.shownCount++;
+                if (!currCell.minesAroundCount) expandShown(board, i, j);
             }
-            // expandShown(board, elCell, i, j);
         }
     }
     renderBoard(gBoard, '.board-container');
 }
 
 
-//checkGameOver
-function checkGameOver(winOrLose) {
+function checkGameOver(winOrLose) {//Game Over process
     if (winOrLose === 'lose') {
         showAllMines();
         gElGameOverMessage.style.display = 'block';
@@ -260,10 +265,21 @@ function checkGameOver(winOrLose) {
         stopWatch();
         return;
     }
+
     if (areAllCellsShown() && areAllMarkedCellsMines() && gLivesCount) victory();
 }
 
-function areAllCellsShown() {
+function victory() {//victory process
+    gElGameOverMessage.style.display = 'block';
+    gElGameOverMessage.innerText = 'Victory!';
+    gElPlaySmiley.innerText = '😎';
+    gGame.isOn = false;
+    stopWatch();
+    isWon = true;
+    return;
+}
+
+function areAllCellsShown() {//checking if all of the cells on the bored are shown(marked are shown as well)
     var count = 0;
     for (var i = 0; i < gBoard.length; i++) {
         for (var j = 0; j < gBoard[0].length; j++) {
@@ -274,7 +290,7 @@ function areAllCellsShown() {
     if (count === gLevel.size ** 2) return true;
 }
 
-function areAllMarkedCellsMines() {
+function areAllMarkedCellsMines() {//checking if all of the marked cells on the bored are mines
     for (var i = 0; i < gBoard.length; i++) {
         for (var j = 0; j < gBoard[0].length; j++) {
             var currCell = gBoard[i][j];
@@ -284,17 +300,7 @@ function areAllMarkedCellsMines() {
     return true;
 }
 
-function victory() {
-    gElGameOverMessage.style.display = 'block';
-    gElGameOverMessage.innerText = 'Victory!';
-    gElPlaySmiley.innerText = '😎';
-    gGame.isOn = false;
-    stopWatch();
-    isWon = true;
-    return;
-}
-
-function showAllMines() {
+function showAllMines() {//show all mines if the player lost the game
     for (var i = 0; i < gBoard.length; i++) {
         for (var j = 0; j < gBoard[0].length; j++) {
             if (gBoard[i][j].isMine === true) {
