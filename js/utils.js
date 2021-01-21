@@ -26,12 +26,12 @@ function getClassName(i, j) {
 
 
 //getEmptyCells
-function getEmptyCells(board) {
+function getEmptyCells(board, iIdx, jIdx) {
   var emptyCells = [];
   for (var i = 0; i < board.length; i++) {
     for (var j = 0; j < board[0].length; j++) {
       var currCell = board[i][j];
-      if (!currCell.isMine) {
+      if (!currCell.isMine && i !== iIdx && j !== jIdx) {//avoid first clicked location
         emptyCells.push({ i: i, j: j })
       }
     }
@@ -43,10 +43,10 @@ function getEmptyCells(board) {
 //addStopWatch
 function addStopWatch() {
   var startTime = new Date();
-  var elStopWatch = document.querySelector('.stop-watch');
+  var elStopWatch = document.querySelector('.time');
   gShowTimeInterval = setInterval(function () {
-      var timeElapsed = (new Date() - startTime);
-      elStopWatch.innerText = parseInt(timeElapsed / 1000);
+    var timeElapsed = (new Date() - startTime);
+    elStopWatch.innerText = parseInt(timeElapsed / 1000);
   }, 1);
 }
 function stopWatch() {

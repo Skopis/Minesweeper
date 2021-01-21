@@ -1,34 +1,90 @@
 body {
+  /* display: inline-block; */
   background-color: rgb(71, 68, 71);
-  color:rgb(207, 145, 10);
+  text-align: center;
+  font-family:'Courier New', Courier, monospace;
 }
 
 .cell {
-  width: 40px;
-  height: 40px;
+  width: 35px;
+  height: 35px;
   text-align: center;
   font-size: 1.5em;
   background-color: rgb(77, 77, 78);
-  border: solid 2px black;
+  border: solid 2px rgb(28, 28, 29); ;
+  opacity: 0.6;
 }
-
 .cell:hover{
-  background-color: rgb(47, 47, 97);
+  background-color: rgb(53, 53, 53);
+  cursor: grab;
 }
-
 .shown{
-  background-color:  rgb(107, 104, 107);
+  background-color: rgb(111, 111, 112);
 }
 .hidden{
   text-indent:-9999px;
-
 }
 
-.stop-watch{
-  background-color: rgb(59, 28, 17);
+.dificulty{
+  border: double 2px rgb(45, 45, 46); ;
+  background-color:  rgb(111, 111, 112);
+  margin-top: 6px;
+  margin-bottom: 4px;
+  border-radius: 25%;
+  width: 80px;
+  font-size: 15px;
+  color:black;
+  opacity: 0.7;
+}
+.dificulty:hover{
+  background-color: rgb(77, 77, 78);
+  cursor:pointer;
 }
 
-span{
-  display: none;
+.play-again{
+  background-color:rgb(71, 68, 71);
+  border: 0px solid transparent;
+}
 
+.life{
+  vertical-align: top;
+  /* margin: 20px; */
+  margin-top: 5px;
+  /* position: relative; */
+  display: inline-block;
+  background-color:rgb(111, 111, 112);
+  border: dashed 2px rgb(45, 45, 46);;
+  border-radius: 25%;
+  height: 22px;
+  width: 75px;
+}
+
+.score, .stop-watch{
+  display: inline-block;
+  background-color:rgb(111, 111, 112);
+  border: dashed 2px rgb(45, 45, 46);
+  border-radius: 25%;
+  width: 120px;
+  font-size: 17px;
+  font-weight: bold;
+  color:black;
+  padding: 3px;
+  font-size: 15px;
+  opacity: 0.6;
+} 
+
+ .game-over{
+  font-weight: bold;
+  font-size: 25px;;
+  opacity: 0.5;
+} 
+
+.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.play-again{
+  padding: 0;
+  font-size: 25px;
 }
