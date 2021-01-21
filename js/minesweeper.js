@@ -1,7 +1,7 @@
 'use strict'
 
-const MINE = '💣'
-const FLAG = '🚩'
+const MINE = '💣';
+const FLAG = '🚩';
 const LIFE = '❤️';
 const HINT = '💡';
 
@@ -28,24 +28,32 @@ var gElStopWatch = document.querySelector('.time');//timer element
 var gElScore = document.querySelector('.score-num');//score element
 var gScores = [0, 0, 0];//array of scores for all 3 levels
 var gLevelIdx = 0;//so we can pull the needed score from the array. begginer=0, medium=1, expert=2
-var gSafeClickRemaining;
-var gElSafeClick = document.querySelector('.safe-click');
+var gSafeClickRemaining;//remaining safe clicks
+var gElSafeClick = document.querySelector('.safe-click');//safe click element
+var gHintRemaining;//remaining hints
+var gElHint = document.querySelector('.hint');//Hint element
+var gHintActive;//is the hint button was clicked it'll be true
 
 
 //initiate Game
 function initGame(elButton) {
-    gSafeClickRemaining = 3;
-    gElSafeClick.innerText = 'SafeClicks: ' + gSafeClickRemaining;
-    gelHint.innerText = HINT;
     gElPlaySmiley.innerText = '😀'
     stopWatch();
     gFirstCellClicked = false;
     gElGameOverMessage.style.display = 'none';
+    gElStopWatch.innerText = '0';
 
     dificultyCheck(elButton);
 
-    gIsWon = false;
-    gElStopWatch.innerText = '0';
+    if (gLevel.mines > 2) {//dificulty check for the initial safe clicks count. Begginer will receive two clicks instead of 3
+        gSafeClickRemaining = 3;
+    } else gSafeClickRemaining = 2;
+    gElSafeClick.innerText = 'SafeClicks: ' + gSafeClickRemaining;
+
+    if (gLevel.mines > 2) {//dificulty check for the initial hints count. Begginer will receive two hints instead of 3
+        gHintRemaining = 3;
+    } else gHintRemaining = 2;
+    gelHint.innerText = HINT.repeat(gHintRemaining);
 
     if (gLevel.mines > 2) {//dificulty check for the initial life count. Begginer will receive two hearts instead of 3
         gLivesCount = 3;
@@ -56,6 +64,38 @@ function initGame(elButton) {
     renderBoard(gBoard, '.board-container');
     gGame.isOn = true;
 }
+
+
+//hint button click
+function hint(elButton) {
+    if (!gFirstCellClicked) return;
+    if (!gHintRemaining) return;
+    gHintActive = true;
+    if (!gHintRemaining) return;
+    gHintRemaining--;
+    elButton.innerText = HINT.repeat(gHintRemaining);
+}
+//hint actication after a cell is clicked
+function activateHint(elCell, rowIdx, colIdx) {
+    for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
+        if (i < 0 || i > gBoard.length - 1) continue
+        for (var j = colIdx - 1; j <= colIdx + 1; j++) {
+            if (j < 0 || j > gBoard[0].length - 1) continue
+            var currCell = gBoard[i][j]
+            if (!currCell.isShown) {
+                gBoard[i][j].isShown = true;
+                renderBoard(gBoard, '.board-container');
+                setTimeout(hideCell, 1000, i, j);
+            }
+        }
+    }
+    gHintActive = false;
+}
+function hideCell(i, j) {
+    gBoard[i][j].isShown = false;
+    renderBoard(gBoard, '.board-container');
+}
+
 
 //safe click
 function safeClick(elButton) {
@@ -71,6 +111,7 @@ function safeClick(elButton) {
         elEmptyCell.classList.remove('safe');
     }, 3000);
 }
+
 
 //dificulty check
 function dificultyCheck(elButton) {
@@ -102,6 +143,7 @@ function dificultyCheck(elButton) {
     }
 }
 
+
 //score count per lever
 function score(idx) {
     if (gIsWon && gElStopWatch.innerText > 0 && gScores[idx] === 0) {
@@ -116,6 +158,7 @@ function score(idx) {
     console.log('gScores', gScores);
     console.log('gScores[idx]', gScores[idx]);
     gElStopWatch.innerText = '0';
+    gIsWon = false;
     return gScores[idx];
 }
 
@@ -204,6 +247,10 @@ function renderBoard(board, selector) {
 function cellClicked(elCell, i, j) {
     if (gGame.isOn === false) return;
     if (gBoard[i][j].isMarked || gBoard[i][j].isShown) return;
+    if (gHintActive) {
+        activateHint(elCell, i, j);
+        return;
+    }
 
     if (!gFirstCellClicked) {
         addStopWatch();
@@ -257,7 +304,8 @@ function cellMarked(elCell, i, j) {
 }
 
 
-function expandShown(board, rowIdx, colIdx) {//expand cells that are neighbors of the given cell, that are not mines
+//expand cells that are neighbors of the given cell, that are not mines - recursive
+function expandShown(board, rowIdx, colIdx) {
     for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
         if (i < 0 || i > board.length - 1) continue;
         for (var j = colIdx - 1; j <= colIdx + 1; j++) {
@@ -274,7 +322,8 @@ function expandShown(board, rowIdx, colIdx) {//expand cells that are neighbors o
 }
 
 
-function checkGameOver(winOrLose) {//Game Over process
+//Game Over process
+function checkGameOver(winOrLose) {
     if (winOrLose === 'lose') {
         showAllMines();
         gElGameOverMessage.style.display = 'block';
@@ -289,7 +338,8 @@ function checkGameOver(winOrLose) {//Game Over process
     if (areAllCellsShown() && areAllMarkedCellsMines() && gLivesCount) victory();
 }
 
-function victory() {//victory process
+//victory process
+function victory() {
     gElGameOverMessage.style.display = 'block';
     gElGameOverMessage.innerText = 'Victory!';
     gElPlaySmiley.innerText = '😎';
@@ -300,7 +350,8 @@ function victory() {//victory process
     return;
 }
 
-function areAllCellsShown() {//checking if all of the cells on the bored are shown(marked are shown as well)
+//checking if all of the cells on the bored are shown(marked are shown as well)
+function areAllCellsShown() {
     var count = 0;
     for (var i = 0; i < gBoard.length; i++) {
         for (var j = 0; j < gBoard[0].length; j++) {
@@ -311,7 +362,8 @@ function areAllCellsShown() {//checking if all of the cells on the bored are sho
     if (count === gLevel.size ** 2) return true;
 }
 
-function areAllMarkedCellsMines() {//checking if all of the marked cells on the bored are mines
+//checking if all of the marked cells on the bored are mines
+function areAllMarkedCellsMines() {
     for (var i = 0; i < gBoard.length; i++) {
         for (var j = 0; j < gBoard[0].length; j++) {
             var currCell = gBoard[i][j];
@@ -321,7 +373,8 @@ function areAllMarkedCellsMines() {//checking if all of the marked cells on the 
     return true;
 }
 
-function showAllMines() {//show all mines if the player lost the game
+//show all mines if the player lost the game
+function showAllMines() {
     for (var i = 0; i < gBoard.length; i++) {
         for (var j = 0; j < gBoard[0].length; j++) {
             if (gBoard[i][j].isMine === true) {
