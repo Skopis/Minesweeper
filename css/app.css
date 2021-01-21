@@ -83,6 +83,9 @@ body {
   cursor:pointer;
 }
 
+.safe{
+  background-color: rgb(53, 53, 53);
+}
 .safe-click{
   vertical-align: top;
   margin-top: 5px;
