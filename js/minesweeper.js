@@ -91,6 +91,7 @@ function activateHint(elCell, rowIdx, colIdx) {
     }
     gHintActive = false;
 }
+//hida back the cell that was revealed
 function hideCell(i, j) {
     gBoard[i][j].isShown = false;
     renderBoard(gBoard, '.board-container');
@@ -135,7 +136,7 @@ function dificultyCheck(elButton) {
     }
     else if (elButton.innerText === '😀' ||
         elButton.innerText === '🤯' ||
-        elButton.innerText === '😎') gElScore.innerText = score(gLevelIdx);
+        elButton.innerText === '😎') gElScore.innerText = score(gLevelIdx);//if the user clickes on the smiley, it should use the last level choice
     else if (!gLevel.size) {
         gLevel.size = 4;
         gLevel.mines = 2;
@@ -146,17 +147,14 @@ function dificultyCheck(elButton) {
 
 //score count per lever
 function score(idx) {
-    if (gIsWon && gElStopWatch.innerText > 0 && gScores[idx] === 0) {
-        gElScore.innerText = gElStopWatch.innerText;
-        gScores[idx] = gElStopWatch.innerText;
-
-    }
-    if (gIsWon && gElStopWatch.innerText > 0 && +(gElStopWatch.innerText) < +(gScores[idx])) {
+    if (gIsWon && gElStopWatch.innerText > 0 && gScores[idx] === 0) {//for the first round on a particular level
         gElScore.innerText = gElStopWatch.innerText;
         gScores[idx] = gElStopWatch.innerText;
     }
-    console.log('gScores', gScores);
-    console.log('gScores[idx]', gScores[idx]);
+    if (gIsWon && gElStopWatch.innerText > 0 && +(gElStopWatch.innerText) < +(gScores[idx])) {//for all of the rest(but the first)
+        gElScore.innerText = gElStopWatch.innerText;
+        gScores[idx] = gElStopWatch.innerText;
+    }
     gElStopWatch.innerText = '0';
     gIsWon = false;
     return gScores[idx];
@@ -245,14 +243,14 @@ function renderBoard(board, selector) {
 
 //cell Clicked
 function cellClicked(elCell, i, j) {
-    if (gGame.isOn === false) return;
-    if (gBoard[i][j].isMarked || gBoard[i][j].isShown) return;
-    if (gHintActive) {
+    if (gGame.isOn === false) return;//if the game is over, don't let it click
+    if (gBoard[i][j].isMarked || gBoard[i][j].isShown) return;//don't let a marked or shown cell be clicked
+    if (gHintActive) {//activate hint if it was clicked before this cell
         activateHint(elCell, i, j);
         return;
     }
 
-    if (!gFirstCellClicked) {
+    if (!gFirstCellClicked) {//if this is the first click, start the watch, add random mines and NeighborMineCount
         addStopWatch();
         insertRandomMines(i, j);
         insertNeighborMineCount();
@@ -260,18 +258,18 @@ function cellClicked(elCell, i, j) {
         renderBoard(gBoard, '.board-container');
     }
 
-    if (!gBoard[i][j].isShown) {
+    if (!gBoard[i][j].isShown) {//if the cell isn't shown - show it
         elCell.classList.remove('hidden');
         gBoard[i][j].isShown = true;
     }
 
-    if (!gBoard[i][j].isMine && gBoard[i][j].minesAroundCount === 0) expandShown(gBoard, i, j);
+    if (!gBoard[i][j].isMine && gBoard[i][j].minesAroundCount === 0) expandShown(gBoard, i, j);//call for the expand function
 
-    if (gBoard[i][j].isMine && gLivesCount > 1) {
+    if (gBoard[i][j].isMine && gLivesCount > 1) {//if you hit a mine but still have more than 1 life left
         gLivesCount--;
         gElLivesCount.innerText = LIFE.repeat(gLivesCount);
     }
-    else if (gBoard[i][j].isMine) {
+    else if (gBoard[i][j].isMine) {//if you hit a mine but don't have only 1 life left
         gLivesCount--;
         gElLivesCount.innerText = LIFE.repeat(gLivesCount);
         checkGameOver('lose');
@@ -284,12 +282,12 @@ function cellClicked(elCell, i, j) {
 
 //cell Marked
 function cellMarked(elCell, i, j) {
-    if (gGame.isOn === false) return;
-    if (gBoard[i][j].isShown && !gBoard[i][j].isMarked) return;
+    if (gGame.isOn === false) return;//if the game is over, don't let it click
+    if (gBoard[i][j].isShown && !gBoard[i][j].isMarked) return;//if the cell shown but not marked, dnot let it be marked
 
-    if (!gFirstCellClicked) return;
+    if (!gFirstCellClicked) return;//right click can't be the first click
 
-    if (gBoard[i][j].isMarked === true) {
+    if (gBoard[i][j].isMarked === true) {//toggle mark-unmark, show-unshow
         gBoard[i][j].isMarked = false;
         elCell.classList.add('hidden');
         gBoard[i][j].isShown = false;
@@ -314,7 +312,7 @@ function expandShown(board, rowIdx, colIdx) {
             var currCell = board[i][j];
             if (!currCell.isMine && !currCell.isShown) {
                 gBoard[i][j].isShown = true;
-                if (!currCell.minesAroundCount) expandShown(board, i, j);
+                if (!currCell.minesAroundCount) expandShown(board, i, j);//if the cell doesn't have mines around it, run it in the function as well
             }
         }
     }
@@ -335,7 +333,7 @@ function checkGameOver(winOrLose) {
         return;
     }
 
-    if (areAllCellsShown() && areAllMarkedCellsMines() && gLivesCount) victory();
+    if (areAllCellsShown() && areAllMarkedCellsMines() && gLivesCount) victory();//if all the cells are shown, all of the marked cells are mines and you still have lives remaining, you win
 }
 
 //victory process

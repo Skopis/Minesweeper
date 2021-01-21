@@ -21,7 +21,7 @@ function getClassName(i, j) {
   return cellClass;
 }
 
-//get empty cells besides the gicen index cell
+//get empty cells besides the given index cell
 function getEmptyCells(board, iIdx, jIdx) {
   var emptyCells = [];
   for (var i = 0; i < board.length; i++) {
