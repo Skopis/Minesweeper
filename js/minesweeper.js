@@ -2,13 +2,12 @@
 
 const MINE = '💣'
 const FLAG = '🚩'
-var gBoard = [];
-var life = '❤️';
+const LIFE = '❤️';
 
+var gBoard = [];
 var gLevel = {
     size: null, mines: null
 };
-
 var gGame = {
     isOn: false, //Boolean, when true we let the user play
     shownCount: 0, //didn't use that
@@ -16,71 +15,89 @@ var gGame = {
     secsPassed: 0 //didn't use that
 }
 
-var isWon = false;
-var gFirstCellClicked;
-var isFirstGame = true;
-var gShowTimeInterval = null;
-var gLivesCount;
-var gElLivesCount = document.querySelector('.life');
-var gElPlaySmiley = document.querySelector('.play-again');
-var gElGameOverMessage = document.querySelector('.game-over');
+var gIsWon = false;//var for the score count - to not update the score if the player lost the game
+var gFirstCellClicked;//var to help make the game in a way that the first clicked cell will never be a mine
+var gLivesCount;//lives counter
+var gShowTimeInterval;//var for the timer
+var gElLivesCount = document.querySelector('.life');//life element
+var gElPlaySmiley = document.querySelector('.play-again');//smily-newGame element
+var gElGameOverMessage = document.querySelector('.game-over');//game-over message element
+var gElStopWatch = document.querySelector('.time');//timer element
+var gElScore = document.querySelector('.score-num');//score element
+var gScores = [0, 0, 0];//array of scores for all 3 levels
+var gLevelIdx = 0;//so we can pull the needed score from the array. begginer=0, medium=1, expert=2
 
 
-//initGame
+//initiate Game
 function initGame(elButton) {
     gElPlaySmiley.innerText = '😀'
     stopWatch();
     gFirstCellClicked = false;
+    gElGameOverMessage.style.display = 'none';
 
-    var elScore = document.querySelector('#score-num');
-    console.log('elScore', elScore);
-    var elStopWatch = document.querySelector('.time');
-    console.log('elStopWatch', elStopWatch)
-    console.log('elStopWatch.innerText', elStopWatch.innerText)
+    dificultyCheck(elButton);
 
-    if (isWon && isFirstGame) {
-        elScore.innerText = elStopWatch.innerText;
-        isFirstGame = false;
-    }
-    if (isWon && elStopWatch.innerText > 0 && +(elStopWatch.innerText) < +(elScore.innerText)) {
-        elScore.innerText = elStopWatch.innerText;
-    }
-    isWon = false;
-    elStopWatch.innerText = '0';
+    gIsWon = false;
+    gElStopWatch.innerText = '0';
 
-    var elGameOverMessage = document.querySelector('.game-over');
-    elGameOverMessage.style.display = 'none';
-
-    if (elButton.innerText === 'Beginner') {
-        gLevel.size = 4;
-        gLevel.mines = 2;
-    }
-    else if (elButton.innerText === 'Medium') {
-        gLevel.size = 8;
-        gLevel.mines = 12;
-    }
-    else if (elButton.innerText === 'Expert') {
-        gLevel.size = 12;
-        gLevel.mines = 30;
-    }
-    else if (!gLevel.size) {
-        gLevel.size = 4;
-        gLevel.mines = 2;
-    }
-
-    if (gLevel.mines > 2) {
+    if (gLevel.mines > 2) {//dificulty check for the initial life count. Begginer will receive two hearts instead of 3
         gLivesCount = 3;
     } else gLivesCount = 2;
-    gElLivesCount.innerText = life.repeat(gLivesCount);
+    gElLivesCount.innerText = LIFE.repeat(gLivesCount);
 
     gBoard = buildBoard(gLevel.size);
     renderBoard(gBoard, '.board-container');
     gGame.isOn = true;
-    // console.log(gBoard);
 }
 
 
-//buildBoard
+//dificulty check
+function dificultyCheck(elButton) {
+    if (elButton.innerText === 'Beginner') {
+        gLevel.size = 4;
+        gLevel.mines = 2;
+        gLevelIdx = 0;
+        gElScore.innerText = score(0);
+    }
+    else if (elButton.innerText === 'Medium') {
+        gLevel.size = 8;
+        gLevel.mines = 12;
+        gLevelIdx = 1;
+        gElScore.innerText = score(1);
+    }
+    else if (elButton.innerText === 'Expert') {
+        gLevel.size = 12;
+        gLevel.mines = 30;
+        gLevelIdx = 2;
+        gElScore.innerText = score(2);
+    }
+    else if (elButton.innerText === '😀' ||
+        elButton.innerText === '🤯' ||
+        elButton.innerText === '😎') gElScore.innerText = score(gLevelIdx);
+    else if (!gLevel.size) {
+        gLevel.size = 4;
+        gLevel.mines = 2;
+        gElScore.innerText = 0;
+    }
+}
+
+//score count per lever
+function score(idx) {
+    if (gIsWon && gElStopWatch.innerText > 0 && gScores[idx] === 0) {
+        gElScore.innerText = gElStopWatch.innerText;
+        gScores[idx] = gElStopWatch.innerText;
+    }
+    if (gIsWon && gElStopWatch.innerText > 0 && +(gElStopWatch.innerText) < +(gScores[idx])) {
+        gElScore.innerText = gElStopWatch.innerText;
+        gScores[idx] = gElStopWatch.innerText;
+    }
+    console.log('gScores', gScores);
+    console.log('gScores[idx]', gScores[idx]);
+    return gScores[idx];
+}
+
+
+//build Board
 function buildBoard(size) {
     var board = [];
     for (var i = 0; i < size; i++) {
@@ -90,14 +107,12 @@ function buildBoard(size) {
             board[i][j] = cell;
         }
     }
-    // console.table(board);
     return board;
 }
 
 
-//insertRandomMines
+//insert Random Mines
 function insertRandomMines(iIdx, jIdx) {
-    //insert mines in random coords - make a seperate function!
     var emptyCells = getEmptyCells(gBoard, iIdx, jIdx);
     for (var i = 0; i < gLevel.mines; i++) {
         var randomLocation = emptyCells[Math.floor(Math.random() * emptyCells.length)];
@@ -107,9 +122,8 @@ function insertRandomMines(iIdx, jIdx) {
 }
 
 
-//insertNeighborMineCount
+//insert NeighborMineCount
 function insertNeighborMineCount() {
-    //insert neighbor mines count - make a seperate function!
     for (var i = 0; i < gLevel.size; i++) {
         for (var j = 0; j < gLevel.size; j++) {
             gBoard[i][j].minesAroundCount = setMinesNegsCount(gBoard, i, j);
@@ -118,7 +132,7 @@ function insertNeighborMineCount() {
 }
 
 
-//renderBoard
+//render Board
 function renderBoard(board, selector) {
     var strHTML = '<table border="0" class="center"><tbody>';
     for (var i = 0; i < board.length; i++) {
@@ -165,7 +179,7 @@ function renderBoard(board, selector) {
 }
 
 
-//cellClicked
+//cell Clicked
 function cellClicked(elCell, i, j) {
     if (gGame.isOn === false) return;
     if (gBoard[i][j].isMarked || gBoard[i][j].isShown) return;
@@ -187,11 +201,11 @@ function cellClicked(elCell, i, j) {
 
     if (gBoard[i][j].isMine && gLivesCount > 1) {
         gLivesCount--;
-        gElLivesCount.innerText = life.repeat(gLivesCount);
+        gElLivesCount.innerText = LIFE.repeat(gLivesCount);
     }
     else if (gBoard[i][j].isMine) {
         gLivesCount--;
-        gElLivesCount.innerText = life.repeat(gLivesCount);
+        gElLivesCount.innerText = LIFE.repeat(gLivesCount);
         checkGameOver('lose');
     }
 
@@ -200,7 +214,7 @@ function cellClicked(elCell, i, j) {
 }
 
 
-//cellMarked
+//cell Marked
 function cellMarked(elCell, i, j) {
     if (gGame.isOn === false) return;
     if (gBoard[i][j].isShown && !gBoard[i][j].isMarked) return;
@@ -225,18 +239,6 @@ function cellMarked(elCell, i, j) {
 }
 
 
-function zero(rowIdx, colIdx) {
-    for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
-        for (var j = colIdx - 1; j <= colIdx + 1; j++) {
-            var neighbor = $('.tile[row-d=' + i + '][col-d=' + j + ']');
-            var bombNr = neighbor.attr('bomb_number');
-
-            neighbor.text(bombNr);
-
-            if (bombNr === "0") zero(i, j);
-        }
-    }
-}
 function expandShown(board, rowIdx, colIdx) {//expand cells that are neighbors of the given cell, that are not mines
     for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
         if (i < 0 || i > board.length - 1) continue;
@@ -261,7 +263,7 @@ function checkGameOver(winOrLose) {//Game Over process
         gElGameOverMessage.innerText = 'Game Over, try again!'
         gElPlaySmiley.innerText = '🤯'
         gGame.isOn = false;
-        isWon = false;
+        gIsWon = false;
         stopWatch();
         return;
     }
@@ -275,7 +277,8 @@ function victory() {//victory process
     gElPlaySmiley.innerText = '😎';
     gGame.isOn = false;
     stopWatch();
-    isWon = true;
+    gIsWon = true;
+    gElScore.innerText = score(gLevelIdx);
     return;
 }
 
