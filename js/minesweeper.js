@@ -170,7 +170,7 @@ function renderBoard(board, selector) {
 //cellClicked
 function cellClicked(elCell, i, j) {
     if (gGame.isOn === false) return;
-    if (gBoard[i][j].isMarked) return;
+    if (gBoard[i][j].isMarked || gBoard[i][j].isShown) return;
 
     if (!gFirstCellClicked) {
         addStopWatch();
@@ -195,7 +195,7 @@ function cellClicked(elCell, i, j) {
     else if (gBoard[i][j].isMine) {
         gLivesCount--;
         gElLivesCount.innerText = life.repeat(gLivesCount);
-        checkGameOver('loose');
+        checkGameOver('lose');
     }
 
     renderBoard(gBoard, '.board-container');
@@ -241,6 +241,7 @@ function expandShown(board, elCell, rowIdx, colIdx) {
                 elCell.classList.remove('hidden');
                 gGame.shownCount++;
             }
+            // expandShown(board, elCell, i, j);
         }
     }
     renderBoard(gBoard, '.board-container');
@@ -248,47 +249,57 @@ function expandShown(board, elCell, rowIdx, colIdx) {
 
 
 //checkGameOver
-function checkGameOver(winOrLoose) {
-
-
-    if (winOrLoose === 'loose') {
+function checkGameOver(winOrLose) {
+    if (winOrLose === 'lose') {
+        showAllMines();
         gElGameOverMessage.style.display = 'block';
-        gElGameOverMessage.innerText = 'Game Over, You loose!'
+        gElGameOverMessage.innerText = 'Game Over, try again!'
         gElPlaySmiley.innerText = '🤯'
         gGame.isOn = false;
         isWon = false;
         stopWatch();
         return;
     }
+    if (areAllCellsShown() && areAllMarkedCellsMines() && gLivesCount) victory();
+}
 
-    var countMarkedMines = 0;
-    var countShownMines = 0;
-    for (var i = 0; i < gBoard.length; i++) {//counting marked mines and shown mines
+function areAllCellsShown() {
+    var count = 0;
+    for (var i = 0; i < gBoard.length; i++) {
         for (var j = 0; j < gBoard[0].length; j++) {
             var currCell = gBoard[i][j];
-            if (currCell.isMine && currCell.isMarked) {
-                countMarkedMines++;
-                countShownMines--;//because a marked mine is also shown(so we can see the flag)
-            }
-            if (currCell.isMine && currCell.isShown) countShownMines++;
+            if (currCell.isShown) count++;
         }
     }
-    console.log('countMarkedMines', countMarkedMines);
-    console.log('countShownMines', countShownMines);
-    console.log('gGame.shownCount', gGame.shownCount);
-    if (countMarkedMines === gLevel.mines &&
-        gGame.shownCount === (gLevel.size ** 2 - gLevel.mines)) victory();//takes care of cases of victory without loosing hearts
-    if (gLivesCount && gGame.shownCount === (gLevel.size ** 2 - gLevel.mines + countShownMines)) {//adding countShownMines because in this case they are counted in gGame.shownCount as well
-        victory();//takes care of cases of victory with loosing hearts but not all of them
+    if (count === gLevel.size ** 2) return true;
+}
+
+function areAllMarkedCellsMines() {
+    for (var i = 0; i < gBoard.length; i++) {
+        for (var j = 0; j < gBoard[0].length; j++) {
+            var currCell = gBoard[i][j];
+            if (currCell.isMarked && !currCell.isMine) return false;
+        }
     }
+    return true;
 }
 
 function victory() {
     gElGameOverMessage.style.display = 'block';
-    gElGameOverMessage.innerText = 'victory!';
+    gElGameOverMessage.innerText = 'Victory!';
     gElPlaySmiley.innerText = '😎';
     gGame.isOn = false;
     stopWatch();
     isWon = true;
     return;
+}
+
+function showAllMines() {
+    for (var i = 0; i < gBoard.length; i++) {
+        for (var j = 0; j < gBoard[0].length; j++) {
+            if (gBoard[i][j].isMine === true) {
+                gBoard[i][j].isShown = true;
+            }
+        }
+    }
 }
